@@ -1,5 +1,7 @@
 import time
 import os.path
+from tkinter import *
+from tkinter.scrolledtext import ScrolledText
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -8,6 +10,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import *
 from selenium.webdriver.common.action_chains import ActionChains
+
+
+
+
 
 plantSymbolsPath = './PlantSymbols.txt'
 checkPlantSymbolsFile = os.path.isfile(plantSymbolsPath)
@@ -311,6 +317,14 @@ def getPlantData():
 
     plantData.close()
 
+#Get the plant symbols if they are not already present
+if(checkPlantSymbolsFile==False):
+    getPlantSymbols()
+
+#Get the plant data if it is not already present
+if(checkPlantDataFile==False):
+    getPlantData()
+
 #Read the 'PlantData.csv' file into 2 maps: State Search Map (key->State, value->List of Plant Names) and Plant Search Map (key->Plant Name, value->Plant Data) 
 def readInPlantData():
     #print("Reading 'PlantData.csv'...")
@@ -390,18 +404,58 @@ stateDict = dictList[0]
 plantDict = dictList[1]
 
 def recommendPlants(state):
-    plantList = stateDict[state]
-    return plantList
+    plantCodeList = list(set(stateDict[state]))
+    trimedList = plantCodeList[0:4]
+    
+    names = []
+    for plant in trimedList:
+        plantData = plantDict[plant]
+        names.append(plantData[2])
+    return names
 
-#Get the plant symbols if they are not already present
-if(checkPlantSymbolsFile==False):
-    getPlantSymbols()
+def displaySearch(label,input):
+    listAsString = str(recommendPlants(input))
+    #outputText.set(listAsString)
+    #text_area.configure(state ='normal')
 
-#Get the plant data if it is not already present
-if(checkPlantDataFile==False):
-    getPlantData()
+    label["text"] = listAsString
+    #text_area.insert(INSERT,"IT WORKS!")
+    #text_area.configure(state ='disabled')
 
-recomendations = recommendPlants("Louisiana")
-print(recomendations)
+
+
+#Main Menu Window
+root = Tk()
+root.title("PLANTS")
+root.configure(background="grey")
+root.minsize(200, 200)  # width, height
+root.maxsize(500, 500)
+root.geometry("500x300+700+300")
+
+titleText = Label(root, text="Enter a state to get a list of recommended plants")
+titleText.pack()
+
+entry = Entry(root)
+entry.pack()
+
+
+#text_area = ScrolledText(root, width = 30,  height = 8,  font = ("Times New Roman", 15)) 
+text_area = Label(root,text="Output Here:") 
+
+#text_area.insert(INSERT, outputText)
+#text_area.configure(state ='disabled')
+text_area.pack()
+
+btn = Button(root, text="Search",command = lambda:displaySearch(text_area,entry.get()))
+
+btn.pack()
+
+root.mainloop()
+
+
+#recomendations = recommendPlants("Louisiana")
+#print(recomendations)
+    
+
 
 
