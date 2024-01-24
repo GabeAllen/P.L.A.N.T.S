@@ -314,12 +314,16 @@ def getPlantData():
 #Read the 'PlantData.csv' file into 2 maps: State Search Map (key->State, value->List of Plant Names) and Plant Search Map (key->Plant Name, value->Plant Data) 
 def readInPlantData():
     #print("Reading 'PlantData.csv'...")
-    plantDataFile = open("PlantDataPart1.csv","r")
+    plantDataFile = open("PlantData.csv","r")
     plantDataRows = plantDataFile.readlines()
     plantDataRows.pop(0)
-    
+    dictList = []
+
     stateSearch = dict(State = [])
-    #stateSearch = 
+    plantSearch = dict(Symbol = [])
+
+    dictList.append(stateSearch)
+    dictList.append(plantSearch)
 
     for row in plantDataRows:
         dataList = row.strip().split(",")
@@ -369,16 +373,26 @@ def readInPlantData():
         # print("Flower Color: "+flowerColor)
         # print("Bloom Period: "+bloomPeriod)
         
-        #Put the plant in the dictionary
+        #Put the plant in the state dictionary
         for state in nativeStatesList:
             if state in stateSearch.keys():
-                stateSearch[state].append(plantCommonName)
+                stateSearch[state].append(plantSymbol)
             else:
-                stateSearch[state] = [plantCommonName]
+                stateSearch[state] = [plantSymbol]
 
-    return stateSearch
-    
-    
+        #Put the plant in the plant dictionary
+        plantSearch[plantSymbol] = dataList
+
+    return dictList
+
+dictList = readInPlantData()
+stateDict = dictList[0]
+plantDict = dictList[1]
+
+def recommendPlants(state):
+    plantList = stateDict[state]
+    return plantList
+
 #Get the plant symbols if they are not already present
 if(checkPlantSymbolsFile==False):
     getPlantSymbols()
@@ -387,6 +401,7 @@ if(checkPlantSymbolsFile==False):
 if(checkPlantDataFile==False):
     getPlantData()
 
-stateDict = readInPlantData()
-#print(stateDict["Louisiana"])
+recomendations = recommendPlants("Louisiana")
+print(recomendations)
+
 
