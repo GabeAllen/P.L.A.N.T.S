@@ -73,7 +73,10 @@ def getPlantData():
     headerString = "plant symbol,plant scientific name,plant common name,native states (separated by '*'),duration,growth habit,growth period,growth rate,moisture use,adapted to coarse soil,adapted to fine soil,adapted to medium soil,drought tolerance,shade tolerance,temp min (°F),foliage color,flower conspicuous,flower color,bloom period\n"
     plantData.write(headerString)
 
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")
+
+    driver = webdriver.Chrome(options=options)
     fileCount = 0
     for line in plantSymbols.readlines():
         plantSymbol = line.strip()
@@ -207,7 +210,15 @@ def getPlantData():
                     # print(rowChildren[0].text)
                     # print(rowChildren[1].text)
                     if(rowChildren[0].text == "Active Growth Period"):
-                        growthPeriod = rowChildren[1].text
+                        cleaningString = rowChildren[1].text
+                        cleanlist = cleaningString.split(",")
+                        output=""
+                        for i in cleanlist:
+                            parts = i.split("and")
+                            for part in parts:
+                                output += part.strip() + "*"
+                        growthPeriod = output
+                        #growthPeriod = rowChildren[1].text
                     if(rowChildren[0].text == "Growth Rate"):
                         growthRate = rowChildren[1].text
                     if(rowChildren[0].text == "Flower Color"):
@@ -302,24 +313,72 @@ def getPlantData():
 
 #Read the 'PlantData.csv' file into 2 maps: State Search Map (key->State, value->List of Plant Names) and Plant Search Map (key->Plant Name, value->Plant Data) 
 def readInPlantData():
-    print("Reading 'PlantData.csv'...")
-    plantDataFile = open("PlantData.csv","r")
+    #print("Reading 'PlantData.csv'...")
+    plantDataFile = open("PlantDataPart1.csv","r")
     plantDataRows = plantDataFile.readlines()
     plantDataRows.pop(0)
+    
+    stateSearch = dict(State = [])
+    #stateSearch = 
+
     for row in plantDataRows:
         dataList = row.strip().split(",")
         plantSymbol = dataList[0]
         plantScientificName = dataList[1]
         plantCommonName = dataList[2]
-        nativeStates = dataList[3].split("*")
-        nativeStates.pop(-1)
-        duration = dataList[4].split("*")
-        duration.pop(-1)
+        nativeStatesList = dataList[3].split("*")
+        nativeStatesList.pop(-1)
+        nslString = ", ".join(nativeStatesList)
+        durationList = dataList[4].split("*")
+        durationList.pop(-1)
+        dlString = ", ".join(durationList)
+        growthHabitList = dataList[5].split("*")
+        growthHabitList.pop(-1)
+        ghlString = ", ".join(growthHabitList)
+        growthPeriodList = dataList[6].split("*")
+        growthPeriodList.pop(-1)
+        gplString = ", ".join(growthPeriodList)
+        growthRate = dataList[7]
+        moistureUse = dataList[8]
+        coarseSoil = dataList[9]
+        fineSoil = dataList[10]
+        medSoil = dataList[11]
+        droughtTolerance = dataList[12]
+        shadeTolerance = dataList[13]
+        minTemp = dataList[14]
+        foliageColor = dataList[15]
+        flowerConspicuous = dataList[16]
+        flowerColor = dataList[17]
+        bloomPeriod = dataList[18]
 
+        # print("_______"+plantCommonName+"_______")
+        # print("Native States: "+nslString)
+        # print("Duration: "+dlString)
+        # print("Growth Habit: "+ghlString)
+        # print("Growth Period: "+gplString) 
+        # print("Growth Rate: "+growthRate)
+        # print("Moisture Use: "+moistureUse)
+        # print("Coarse Soil: "+coarseSoil)
+        # print("Fine Soil: "+fineSoil)
+        # print("Medium Soil: "+medSoil)
+        # print("Drought Tolerance: "+droughtTolerance)
+        # print("Shade Tolerance: "+shadeTolerance)
+        # print("Min Temp (F): "+minTemp)
+        # print("Foliage Color: "+foliageColor)
+        # print("Flower Conspicuous: "+flowerConspicuous)
+        # print("Flower Color: "+flowerColor)
+        # print("Bloom Period: "+bloomPeriod)
         
-        print(plantCommonName)
-        print(duration)
+        #Put the plant in the dictionary
+        for state in nativeStatesList:
+            if state in stateSearch.keys():
+                stateSearch[state].append(plantCommonName)
+            else:
+                stateSearch[state] = [plantCommonName]
 
+    return stateSearch
+    
+    
 #Get the plant symbols if they are not already present
 if(checkPlantSymbolsFile==False):
     getPlantSymbols()
@@ -328,4 +387,6 @@ if(checkPlantSymbolsFile==False):
 if(checkPlantDataFile==False):
     getPlantData()
 
-#readInPlantData()
+stateDict = readInPlantData()
+#print(stateDict["Louisiana"])
+
