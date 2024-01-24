@@ -405,56 +405,89 @@ plantDict = dictList[1]
 
 def recommendPlants(state):
     plantCodeList = list(set(stateDict[state]))
-    trimedList = plantCodeList[0:4]
     
-    names = []
-    for plant in trimedList:
+    plants = []
+    for plant in plantCodeList:
         plantData = plantDict[plant]
-        names.append(plantData[2])
-    return names
+        plants.append(plantData[0]+" - "+plantData[1] +" / "+plantData[2])
+    return plants
 
-def displaySearch(label,input):
-    listAsString = str(recommendPlants(input))
-    #outputText.set(listAsString)
-    #text_area.configure(state ='normal')
+def displaySearch(listArea,input):
+    plantList = recommendPlants(input)
+    listArea.delete(0,"end")
+    #print("Found "+str(len(plantList))+" results")
+    i = 1
+    for plant in plantList:
+        listArea.insert(i,plant)
+        i+=1
 
-    label["text"] = listAsString
-    #text_area.insert(INSERT,"IT WORKS!")
-    #text_area.configure(state ='disabled')
+def displayPlantInfo(selection):
+    plantProfileSection.configure(state=NORMAL)
+    plantProfileSection.delete(0,"end")
+    for i in selection:
+        selectedPlantRow = listArea.get(i)
+        selectedPlant = selectedPlantRow.split(" - ")[0]
+    
+    plantInfo = plantDict[selectedPlant]
 
+    plantProfileSection.insert(1,"Scientific Name: "+plantInfo[1])
+    plantProfileSection.insert(2,"Common Name: "+plantInfo[2])
+    durationList = plantInfo[4].split("*")
+    durationList.pop(-1)
+    dlString = ", ".join(durationList)
+    plantProfileSection.insert(3,"Duration: "+dlString)
+    growthHabitList = plantInfo[5].split("*")
+    growthHabitList.pop(-1)
+    ghlString = ", ".join(growthHabitList)
+    plantProfileSection.insert(4,"Growth Habit: "+ghlString)
+    growthPeriodList = plantInfo[6].split("*")
+    growthPeriodList.pop(-1)
+    gplString = ", ".join(growthPeriodList)
+    plantProfileSection.insert(5,"Growth Period: "+gplString)
+    plantProfileSection.insert(6,"Growth Rate: "+plantInfo[7])
+    plantProfileSection.insert(7,"Moisture Usage: "+plantInfo[8])
+    plantProfileSection.insert(8,"Adapted to Coarse Soil: "+plantInfo[9])
+    plantProfileSection.insert(9,"Adapted to Fine Soil: "+plantInfo[10])
+    plantProfileSection.insert(10,"Adapted to Medium Soil: "+plantInfo[11])
+    plantProfileSection.insert(11,"Drought Tolerance: "+plantInfo[12])
+    plantProfileSection.insert(12,"Shade Tolerance: "+plantInfo[13])
+    plantProfileSection.insert(13,"Min Temp(F): "+plantInfo[14])
+    plantProfileSection.insert(14,"Foliage Color: "+plantInfo[15])
+    plantProfileSection.insert(15,"Flower Conspicuous: "+plantInfo[16])
+    plantProfileSection.insert(16,"Flower Color: "+plantInfo[17])
+    plantProfileSection.insert(17,"Bloom Period: "+plantInfo[18])
+    plantProfileSection.configure(state=DISABLED)
 
+#Function to generate overview text
 
 #Main Menu Window
 root = Tk()
 root.title("PLANTS")
 root.configure(background="grey")
-root.minsize(200, 200)  # width, height
-root.maxsize(500, 500)
+root.minsize(1000, 600)  # width, height
+#root.maxsize(1500, 750)
 root.geometry("500x300+700+300")
 
 titleText = Label(root, text="Enter a state to get a list of recommended plants")
 titleText.pack()
-
 entry = Entry(root)
 entry.pack()
-
-
-#text_area = ScrolledText(root, width = 30,  height = 8,  font = ("Times New Roman", 15)) 
-text_area = Label(root,text="Output Here:") 
-
-#text_area.insert(INSERT, outputText)
-#text_area.configure(state ='disabled')
-text_area.pack()
-
-btn = Button(root, text="Search",command = lambda:displaySearch(text_area,entry.get()))
-
+#when the search button is clicked, add the recommended plants to the output list area
+btn = Button(root, text="Search",command = lambda:displaySearch(listArea,entry.get()))
 btn.pack()
+listArea = Listbox(root,height=20,width=60)
+listArea.pack()
+
+btn2 = Button(root, text="More Info",command = lambda:displayPlantInfo(listArea.curselection()))
+btn2.pack()
+plantProfileSection = Listbox(root,width=60)
+plantProfileSection.configure(state=DISABLED)
+plantProfileSection.pack()
+print()
 
 root.mainloop()
 
 
-#recomendations = recommendPlants("Louisiana")
-#print(recomendations)
     
 
 
