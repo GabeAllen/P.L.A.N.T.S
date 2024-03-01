@@ -23,16 +23,6 @@ from keras.layers import Conv2D, MaxPooling2D
 training_data_directory = 'train'
 test_data_directory = 'test'
 
-# # # download soil_photos.zip
-# # file = 'soil_photos.zip'
-# # url = 'http://apmonitor.com/pds/uploads/Main/'+file
-# # urllib.request.urlretrieve(url, file)
-
-# # # extract archive and remove soil_photos.zip
-# # with zipfile.ZipFile(file, 'r') as zip_ref:
-# #     zip_ref.extractall('./')
-# # os.remove(file)
-
 # # Initiate data processing tools
 # training_data_processor = ImageDataGenerator(
 #     rescale = 1./255,
@@ -112,10 +102,12 @@ test_data_directory = 'test'
 
 # print("Model trained and saved")
 
+
 model_file = os.getcwd()+'/'+'soil_prediction_model.keras'
 model = load_model(model_file)
 print("loaded model")
 def make_prediction(image_fp):
+    
     im = cv2.imread(image_fp) # load image
     plt.imshow(im[:,:,[2,1,0]])
     img = image.load_img(image_fp, target_size = (256,256))
@@ -137,5 +129,5 @@ def make_prediction(image_fp):
     Correct?: {predicted_value == true_value}"""
     
     return out
-# test_image_filepath = test_data_directory + r'\Alluvial soil\Alluvial_3.jpg'
-# print(make_prediction(test_image_filepath))
+#test_image_filepath = test_data_directory + r'\Clay soil\Clay_1.jpg'
+#print(make_prediction(test_image_filepath))
