@@ -121,12 +121,15 @@ def make_prediction(image_fp):
 
 
     predicted_value = class_[model.predict(img_batch).argmax()]
-    true_value = re.search(r'(Alluvial soil)|(Black Soil)|(Clay soil)|(Red soil)', image_fp)[0]
+    #true_value = re.search(r'(Alluvial soil)|(Black Soil)|(Clay soil)|(Red soil)', image_fp)[0]
     #Change to my output values^
 
-    out = f"""Predicted Soil Type: {predicted_value}
-    True Soil Type: {true_value}
-    Correct?: {predicted_value == true_value}"""
+    # out = f"""Predicted Soil Type: {predicted_value}
+    # True Soil Type: {true_value}
+    # Correct?: {predicted_value == true_value}"""
+
+    out = f"""Predicted Soil Type: {predicted_value}"""
+
     
     return out
 #test_image_filepath = test_data_directory + r'\Clay soil\Clay_1.jpg'

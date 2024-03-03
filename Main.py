@@ -14,12 +14,15 @@ from selenium.common.exceptions import *
 from selenium.webdriver.common.action_chains import ActionChains
 import SoilPrediction
 from SoilPrediction import make_prediction
+from PIL import ImageTk, Image  
 
 plantSymbolsPath = './PlantSymbols.txt'
 checkPlantSymbolsFile = os.path.isfile(plantSymbolsPath)
 
 plantDataPath = './PlantData.csv'
 checkPlantDataFile = os.path.isfile(plantDataPath)
+
+global imageFilePath
 
 #Webscrape the symbol for each plant from the USDA plant database and store it in the 'PlantSymbols.txt' file.
 def getPlantSymbols():
@@ -457,48 +460,52 @@ def displayPlantInfo(selection,plantProfileSection,plantList):
 
     plantProfileSection.insert(1,"Scientific Name: "+plantInfo[1])
     plantProfileSection.insert(2,"Common Name: "+plantInfo[2])
+    plantProfileSection.insert(3,"")
+
     durationList = plantInfo[4].split("*")
     durationList.pop(-1)
     dlString = ", ".join(durationList)
-    plantProfileSection.insert(3,"Duration: "+dlString)
+    plantProfileSection.insert(4,"Duration: "+dlString)
     growthHabitList = plantInfo[5].split("*")
     growthHabitList.pop(-1)
     ghlString = ", ".join(growthHabitList)
-    plantProfileSection.insert(4,"Growth Habit: "+ghlString)
+    plantProfileSection.insert(5,"Growth Habit: "+ghlString)
     growthPeriodList = plantInfo[6].split("*")
     growthPeriodList.pop(-1)
     gplString = ", ".join(growthPeriodList)
-    plantProfileSection.insert(5,"Growth Period: "+gplString)
-    plantProfileSection.insert(6,"Growth Rate: "+plantInfo[7])
-    plantProfileSection.insert(7,"Moisture Usage: "+plantInfo[8])
-    plantProfileSection.insert(8,"Adapted to Coarse Soil: "+plantInfo[9])
-    plantProfileSection.insert(9,"Adapted to Fine Soil: "+plantInfo[10])
-    plantProfileSection.insert(10,"Adapted to Medium Soil: "+plantInfo[11])
-    plantProfileSection.insert(11,"Drought Tolerance: "+plantInfo[12])
-    plantProfileSection.insert(12,"Shade Tolerance: "+plantInfo[13])
-    plantProfileSection.insert(13,"Min Temp(F): "+plantInfo[14])
-    plantProfileSection.insert(14,"Foliage Color: "+plantInfo[15])
-    plantProfileSection.insert(15,"Flower Conspicuous: "+plantInfo[16])
-    plantProfileSection.insert(16,"Flower Color: "+plantInfo[17])
-    plantProfileSection.insert(17,"Bloom Period: "+plantInfo[18])
-    plantProfileSection.configure(state=DISABLED)
+    plantProfileSection.insert(6,"Growth Period: "+gplString)
+    plantProfileSection.insert(7,"Growth Rate: "+plantInfo[7])
+    plantProfileSection.insert(8,"")
 
+    plantProfileSection.insert(9,"Moisture Usage: "+plantInfo[8])
+    plantProfileSection.insert(10,"Adapted to Coarse Soil: "+plantInfo[9])
+    plantProfileSection.insert(11,"Adapted to Fine Soil: "+plantInfo[10])
+    plantProfileSection.insert(12,"Adapted to Medium Soil: "+plantInfo[11])
+    plantProfileSection.insert(13,"Drought Tolerance: "+plantInfo[12])
+    plantProfileSection.insert(14,"Shade Tolerance: "+plantInfo[13])
+    plantProfileSection.insert(15,"Min Temp(F): "+plantInfo[14])
+    plantProfileSection.insert(16,"")
+    plantProfileSection.insert(17,"Foliage Color: "+plantInfo[15])
+    plantProfileSection.insert(18,"Flower Conspicuous: "+plantInfo[16])
+    plantProfileSection.insert(19,"Flower Color: "+plantInfo[17])
+    plantProfileSection.insert(20,"Bloom Period: "+plantInfo[18])
 
-def openFile():
+def openFile(imageLabel):
     filePath = filedialog.askopenfilename()
-    print(make_prediction(filePath))
+    global imageFilePath
+    imageFilePath=filePath
+
+    #Set the image label widget to the seleted image
+    image = Image.open(filePath)
+    soilImage = ImageTk.PhotoImage(image)
+
+    imageLabel.configure(image = soilImage)
+    imageLabel.image = soilImage\
     
-    #file = open
-
-#TODO: Write a function to trim the plant list depending on the filter selection
-def trimList(listArea):
-    print("trimming list")
-
-
-#TODO: Write a function to generate overview text for a given plant
-def generateOverviewText(plant):
-    print("Overview:")
-
+def displayPrediction(outputLabel):    
+    outputText = make_prediction(imageFilePath)
+    #print(make_prediction(inputImageFilePath))
+    outputLabel.configure(text=outputText)
 
 def clear_frame():
    for widgets in root.winfo_children():
@@ -506,99 +513,193 @@ def clear_frame():
 
 def displayMainMenu():
     clear_frame()
-    mainMenu = Frame(root)
-    mainMenu.pack()
+    # mainMenu = Frame(root)
+    # mainMenu.pack()
     #root.wm_attributes('-transparentcolor', '#ab23ff')
-    plantSearchScreenButton = Button(mainMenu, text="Plant Search", command = lambda:displayPlantSearchScreen())
-    plantSearchScreenButton.grid(row = 0 ,column= 0 )
+    topBarFrame = Frame(root,bg="#474A2C")
+    topBarFrame.grid(row=0,column=0,sticky=EW,pady=(0,40))
+    topBarFrame.grid_columnconfigure(0, weight=1)
 
-    soilPredictionScreenButton = Button(mainMenu, text="Soil Prediction", command = lambda:displaySoilPredictionScreen())
-    soilPredictionScreenButton.grid(row = 1 ,column= 0 )
+    titleText = Label(topBarFrame, text="P.L.A.N.T.S",bg="#474A2C",font=('Aerial 20 bold italic'),fg="#F8FCDA")
+    titleText.grid(row=0,column=0)
+
+    subTitleText = Label(topBarFrame, text="Plant Location Analysis and Niche Terrestrial Soil",bg="#474A2C",font=('Aerial 10'),fg="white")
+    subTitleText.grid(row=1,column=0,pady=(0,10))
+
+    plantSearchScreenButton = Button(root, text="Plant Search", command = lambda:displayPlantSearchScreen())
+    plantSearchScreenButton.grid(row = 2 ,column= 0,pady=(40,20))
+
+    soilPredictionScreenButton = Button(root, text="Soil Prediction", command = lambda:displaySoilPredictionScreen())
+    soilPredictionScreenButton.grid(row = 3 ,column= 0 )
 
 def displayPlantSearchScreen():
     clear_frame()
-    frame1 = Frame(root,bg="coral",width=100,height=100)
-    frame1.grid(row = 2, column=0)
 
+    #titleSectionFrame = Frame(root,bg="coral",width=100,height=100)
     #COL 0
-    titleText = Label(root, text="Plant Search",bg="coral",font=('Aerial 16'),fg="black")
-    titleText.grid(row = 0, column= 0)
+    
+    # titleAreaFrame = Frame(root,bg="coral",width=100,height=100)
+    # titleAreaFrame.grid(row = 0, column=0)
+    topBarFrame = Frame(root,background='#474A2C')
+    topBarFrame.grid(row=0,column=0,sticky=EW)
+    topBarFrame.grid_columnconfigure(0, weight=1)
 
-    explanationText = Label(root, text="Enter a state to get a list of recommended plants:",bg="coral",font=('Aerial 10'),fg="white")
-    explanationText.grid(row = 1, column = 0)
 
-    entry = Entry(frame1)
+    mainMenuBtn = Button(topBarFrame, text="Main Menu",command = lambda:displayMainMenu())
+    mainMenuBtn.grid(row=0,column=0,sticky=W,padx=10,pady=(10,0))
+    
+    titleText = Label(topBarFrame, text="Plant Search",bg="#474A2C",font=('Aerial 20 bold italic'),fg="#F8FCDA")
+    titleText.grid(row=1,column=0)
+
+    explanationText = Label(topBarFrame, text="Enter a state to get a list of recommended plants",bg="#474A2C",font=('Aerial 10'),fg="white")
+    explanationText.grid(row = 2, column = 0,pady=(0,5))
+
+    contentFrame = Frame(root,bg="#646F4B")
+    contentFrame.grid(row=1,column=0,sticky=N,pady=(30,0))
+    
+    contentFrame.grid_rowconfigure(0, weight=1)
+    contentFrame.grid_columnconfigure(0, weight=1)
+
+    searchFrame = Frame(contentFrame,bg="#646F4B",width=100,height=100)
+    searchFrame.grid(row = 2, column=0,pady=(0,30))
+    entry = Entry(searchFrame)
     entry.insert(0,"Search")
     entry.grid(row = 0, column = 0,padx=10)
 
     #when the search button is clicked, add the recommended plants to the output list area
-    btn = Button(frame1, text="Search",command = lambda:displaySearch(listArea,entry.get(),durationDropdown.get(),growthHabitDropdown.get(),flowerColorDropdown.get(),flowerConspicuousDropdown.get()))
+    btn = Button(searchFrame, text="Search",command = lambda:displaySearch(listArea,entry.get(),durationDropdown.get(),growthHabitDropdown.get(),flowerColorDropdown.get(),flowerConspicuousDropdown.get()))
     btn.grid(row = 0, column = 1)
 
-    listArea = Listbox(root,height=20,width=60)
-    listArea.grid(row = 3, column = 0, pady = 10, padx=20,rowspan=7)
+    filterFrame = Frame(contentFrame,bg="#646F4B")
+    filterFrame.grid(row = 3, column = 0,pady=(0,50),sticky=EW)
 
-    #COL 1
-    filterText = Label(root, text="Filters:",bg="coral")
-    filterText.grid(row = 0, column= 1)
+    durationFrame = Frame(filterFrame,bg="#646F4B")
+    durationFrame.grid(row=0,column=0)
+    durationText = Label(durationFrame, text="Duration:",bg="#646F4B",font="bold",fg="#F8FCDA")
+    durationText.grid(row = 0, column= 0)
+    durationDropdown = Combobox(durationFrame,state="readonly",values=["Perennial","Biennial","Annual"])
+    durationDropdown.grid(row=1, column= 0)
 
-    durationText = Label(root, text="Duration:",bg="coral")
-    durationText.grid(row = 1, column= 1,sticky=S)
-    durationDropdown = Combobox(state="readonly",values=["Perennial","Biennial","Annual"])
-    durationDropdown.grid(row = 2, column= 1)
+    growthHabitFrame = Frame(filterFrame,bg="#646F4B",padx=20)
+    growthHabitFrame.grid(row=0,column=1)
+    growthHabitText = Label(growthHabitFrame, text="Growth Habit:",bg="#646F4B",font="bold",fg="#F8FCDA")
+    growthHabitText.grid(row = 0, column= 0)
+    growthHabitDropdown = Combobox(growthHabitFrame,state="readonly",values=["Forb/herb","Graminoid","Lichenous","Nonvascular","Shrub","Subshrub","Tree","Vine"])
+    growthHabitDropdown.grid(row = 1, column= 0)
 
-    growthHabitText = Label(root, text="Growth Habit:",bg="coral")
-    growthHabitText.grid(row = 3, column= 1,sticky=S)
-    growthHabitDropdown = Combobox(state="readonly",values=["Forb/herb","Graminoid","Lichenous","Nonvascular","Shrub","Subshrub","Tree","Vine"])
-    growthHabitDropdown.grid(row = 4, column= 1)
+    flowerColorFrame = Frame(filterFrame,bg="#646F4B",padx=20)
+    flowerColorFrame.grid(row=0,column=2)
+    flowerColorText = Label(flowerColorFrame, text="Flower Color:",bg="#646F4B",font="bold",fg="#F8FCDA")
+    flowerColorText.grid(row = 0, column= 0)
+    flowerColorDropdown = Combobox(flowerColorFrame,state="readonly",values=["Blue","Brown","Green","Orange","Purple","Red","White","Yellow"])
+    flowerColorDropdown.grid(row = 1, column= 0)
 
-    flowerColorText = Label(root, text="Flower Color:",bg="coral")
-    flowerColorText.grid(row = 5, column= 1,sticky=S)
-    flowerColorDropdown = Combobox(state="readonly",values=["Blue","Brown","Green","Orange","Purple","Red","White","Yellow"])
-    flowerColorDropdown.grid(row = 6, column= 1)
+    flowerConFrame = Frame(filterFrame,bg="#646F4B",padx=20)
+    flowerConFrame.grid(row=0,column=3)
+    flowerConspicuousText = Label(flowerConFrame, text="Flower Conspicuous:",bg="#646F4B",font="bold",fg="#F8FCDA")
+    flowerConspicuousText.grid(row = 0, column= 0)
+    flowerConspicuousDropdown = Combobox(flowerConFrame,state="readonly",values=["Yes","No"])
+    flowerConspicuousDropdown.grid(row = 1, column= 0)
 
-    flowerConspicuousText = Label(root, text="Flower Conspicuous:",bg="coral")
-    flowerConspicuousText.grid(row = 7, column= 1,sticky=S)
-    flowerConspicuousDropdown = Combobox(state="readonly",values=["Yes","No"])
-    flowerConspicuousDropdown.grid(row = 8, column= 1)
+    outputFrame = Frame(contentFrame,bg="#646F4B")
+    outputFrame.grid(row=4,column=0)
 
-
-    #COL 2
+    listArea = Listbox(outputFrame,height=20,width=60,background="#E3E9C2",selectforeground="black",selectbackground="white")
+    listArea.grid(row = 0, column = 0)
 
     #when the Get Info button is clicked, add the plant data to the plant profile section
-    btn2 = Button(root, text="Get Info",command = lambda:displayPlantInfo(listArea.curselection(),plantInfoSection,listArea))
-    btn2.grid(row = 0, column = 2,pady=20)
+    btn2 = Button(outputFrame, text="Get Info",command = lambda:displayPlantInfo(listArea.curselection(),plantInfoSection,listArea))
+    btn2.grid(row = 0, column = 1,padx=10)
+
+    # # plantProfileSection = Listbox(root,height=20,width=60,background="coral",borderwidth=0, highlightthickness=0,font=('Aerial 13'),fg="black")
+    # # plantProfileSection.configure(state=DISABLED)
+    plantInfoSection = Listbox(outputFrame,height=20,width=60,background="#E3E9C2",borderwidth=0, highlightthickness=0,fg="black",activestyle='none',selectforeground="black",selectbackground="#E3E9C2")
+    plantInfoSection.grid(row = 0, column = 3)
+    
+    plantInfoSection.insert(1,"Scientific Name: ")
+    plantInfoSection.insert(2,"Common Name: ")
+
+    plantInfoSection.insert(3,"") 
+
+    plantInfoSection.insert(4,"Duration: ")
+    plantInfoSection.insert(5,"Growth Habit: ")
+    plantInfoSection.insert(6,"Growth Period: ")
+    plantInfoSection.insert(7,"Growth Rate: ")
+    plantInfoSection.insert(8,"")
 
 
-    clearBtn = Button(root, text="Main Menu",command = lambda:displayMainMenu())
-    clearBtn.grid(row=1,column=2)
+    plantInfoSection.insert(9,"Moisture Usage: ")
+    plantInfoSection.insert(10,"Adapted to Coarse Soil: ")
+    plantInfoSection.insert(11,"Adapted to Fine Soil: ")
+    plantInfoSection.insert(12,"Adapted to Medium Soil: ")
+    plantInfoSection.insert(13,"Drought Tolerance: ")
+    plantInfoSection.insert(14,"Shade Tolerance: ")
+    plantInfoSection.insert(15,"Min Temp(F): ")
+    plantInfoSection.insert(16,"")
 
-    # plantProfileSection = Listbox(root,height=20,width=60,background="coral",borderwidth=0, highlightthickness=0,font=('Aerial 13'),fg="black")
-    # plantProfileSection.configure(state=DISABLED)
-    plantInfoSection = Listbox(root,height=20,width=60,background="coral",borderwidth=0, highlightthickness=0,font=('Aerial 13'),fg="black")
-    plantInfoSection.grid(row = 2, column = 2,rowspan=8,sticky=N,padx=20)
+
+    plantInfoSection.insert(17,"Foliage Color: ")
+    plantInfoSection.insert(18,"Flower Conspicuous: ")
+    plantInfoSection.insert(19,"Flower Color: ")
+    plantInfoSection.insert(20,"Bloom Period: ")
 
 def displaySoilPredictionScreen():
     clear_frame()
+    
+    topBarFrame = Frame(root,background='#474A2C')
+    topBarFrame.grid(row=0,column=0,sticky=EW)
+    topBarFrame.grid_columnconfigure(0, weight=1)
 
-    fileBtn = Button(root, text="Predict Soil Type",command = lambda:openFile())
-    fileBtn.grid(row=0,column=0)
+    mainMenuBtn = Button(topBarFrame, text="Main Menu",command = lambda:displayMainMenu())
+    mainMenuBtn.grid(row=0,column=0,sticky=W,padx=10,pady=10)
 
-    clearBtn = Button(root, text="Main Menu",command = lambda:displayMainMenu())
-    clearBtn.grid(row=1,column=0)
+    titleText = Label(topBarFrame, text="Soil Prediction",bg="#474A2C",font=('Aerial 20 bold italic'),fg="#F8FCDA")
+    titleText.grid(row=1,column=0)
+
+    subTitleText = Label(topBarFrame, text="Select a photo of soil to predict its content",bg="#474A2C",font=('Aerial 10'),fg="white")
+    subTitleText.grid(row=2,column=0)
+
+    contentFrame = Frame(root,bg="#646F4B")
+    contentFrame.grid(row=1,column=0,sticky=N)
+    contentFrame.grid_rowconfigure(0, weight=1)
+    contentFrame.grid_columnconfigure(0, weight=1)
+
+
+    controlFrame = Frame(contentFrame,bg="#646F4B")
+    controlFrame.grid(row=2,column=0)
+
+    btnFrame = Frame(controlFrame,bg="#646F4B")
+    btnFrame.grid(row=0,column=0,pady=(30,0))
+
+    fileBtn = Button(btnFrame, text="Open Image File",command = lambda:openFile(imageLabel))
+    fileBtn.grid(row=0,column=0,padx=(0,5))
+
+    predictBtn = Button(btnFrame, text="Predict Soil Type",command = lambda:displayPrediction(outputLabel))
+    predictBtn.grid(row=0,column=1,padx=(5,0))
+
+    
+    outputLabel = Label(controlFrame,text="Predicted Soil Type: ",bg="#646F4B",font='Aerial 12',fg="#F8FCDA")
+    outputLabel.grid(row=1,column=0,padx=30)
+
+
+    imageLabel = Label(contentFrame,bg="#646F4B")
+    imageLabel.grid(row=3,column=0)
+
+    
+
+#TODO: Write a function to generate overview text for a given soil type
+def generateSoilOverviewText(soilType):
+    print("Soil Overview:")
 
 #Main Menu Window
 root = Tk()
-root.title("PLANTS")
-root.configure(background="coral")
-root.minsize(1000, 600)  # width, height
-#root.maxsize(1500, 750)
-root.geometry("500x300")
-#plantProfileSection.configure(state=DISABLED)
-displayMainMenu()
-# listArea = Listbox(root,height=20,width=60)
+root.title("P.L.A.N.T.S")
+root.configure(bg="#646F4B")
+root.minsize(1000, 700)# width, height
+root.geometry("1000x700")
+root.grid_columnconfigure(0, weight=1)
 
-# plantProfileSection = Listbox(root,height=20,width=60,background="coral",borderwidth=0, highlightthickness=0,font=('Aerial 13'),fg="black")
+displayMainMenu()
 
 root.mainloop()
 
